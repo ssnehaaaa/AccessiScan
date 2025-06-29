@@ -24,41 +24,44 @@ const AuthCard = ({ isSignIn }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  
+const BASE_URL = import.meta.env.VITE_API_URL;
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+  e.preventDefault();
+  setError('');
 
-    const endpoint = isSignIn ? '/api/auth/login' : '/api/auth/signup';
+  const endpoint = isSignIn
+    ? `${BASE_URL}/auth/login`
+    : `${BASE_URL}/auth/signup`;
 
-    try {
-      const payload = isSignIn
-        ? {
-            email: formData.email,
-            password: formData.password
-          }
-        : {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            phone: formData.phone,
-            email: formData.email,
-            password: formData.password
-          };
+  try {
+    const payload = isSignIn
+      ? {
+          email: formData.email,
+          password: formData.password
+        }
+      : {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+          email: formData.email,
+          password: formData.password
+        };
 
-      const res = await axios.post(endpoint, payload);
-      const { token, user } = res.data;
-      setAuth({ user, token, isLoggedIn: true });
+    const res = await axios.post(endpoint, payload);
+    const { token, user } = res.data;
+    setAuth({ user, token, isLoggedIn: true });
 
-
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", token);
-      navigate('/dashboard');
-
-    } catch (err) {
-      setError(
-        err.response?.data?.message || 'Something went wrong. Please try again.'
-      );
-    }
-  };
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("token", token);
+    navigate('/dashboard');
+  } catch (err) {
+    setError(
+      err.response?.data?.message || 'Something went wrong. Please try again.'
+    );
+  }
+};
 
   return (
     <div className="w-full max-w-5xl mx-auto flex flex-col md:flex-row bg-white shadow-2xl rounded-2xl overflow-hidden">
