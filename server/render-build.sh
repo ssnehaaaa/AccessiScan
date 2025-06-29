@@ -1,2 +1,7 @@
+#!/usr/bin/env bash
+
+# Install deps
 npm install
-npx puppeteer browsers install chrome
+
+# Ensure puppeteer uses correct cache directory
+npx puppeteer --config server/puppeteer.config.cjs browsers install chrome
