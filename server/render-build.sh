@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
+# This script installs Chromium for Puppeteer on Render
 
-# Install dependencies
 npm install
-
-# Install Chromium for Puppeteer using npx
-npx --yes puppeteer browsers install chrome
+npx puppeteer browsers install chrome
