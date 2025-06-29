@@ -13,13 +13,14 @@ const AnalyzePage = () => {
   const setScanResult = useSetRecoilState(accessibilityResultState);
   const { token } = useRecoilValue(authState);
   const navigate = useNavigate();
+  const BASE_URL = import.meta.env.VITE_API_URL;
 
   const handleAnalyze = async () => {
     if (!url) return alert("Please enter a URL");
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/analyze", {
+      const response = await fetch(`${BASE_URL}/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json",
                   "Authorization": `Bearer ${token}`,
