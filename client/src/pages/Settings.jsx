@@ -7,6 +7,7 @@ import { Pencil, Eye, EyeOff } from "lucide-react";
 const Settings = () => {
   const { user, token } = useRecoilValue(authState);
   const setAuth = useSetRecoilState(authState);
+  const BASE_URL = import.meta.env.VITE_API_URL;
 
   const [editable, setEditable] = useState(false);
 
@@ -45,7 +46,7 @@ const Settings = () => {
 
   const handleSave = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/users/update", {
+      const res = await fetch(`${BASE_URL}/users/update`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -94,7 +95,7 @@ const Settings = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/users/change-password", {
+      const res = await fetch(`${BASE_URL}/users/change-password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
