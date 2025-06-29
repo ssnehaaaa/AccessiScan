@@ -14,10 +14,19 @@ dotenv.config();
 const app = express();
 
 // ✅ Middleware
-const allowedOrigins = ['https://accessi-scan-sneha.vercel.app'];
+const allowedOrigins = [
+  'https://accessi-scan-sneha.vercel.app',
+  'https://accessi-scan-sneha-ftm0e0jc8-ssnehaaaas-projects.vercel.app'
+];
 
 app.use(cors({
-  origin: 'https://accessi-scan-sneha.vercel.app',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 app.use(express.json()); // Must be before route handling
