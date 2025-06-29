@@ -7,4 +7,4 @@ npm install
 echo "export default { cacheDirectory: '/opt/render/.cache/puppeteer' };" > puppeteer.config.cjs
 
 # Install Chromium browser using Puppeteer
-npx puppeteer --config puppeteer.config.cjs browsers install chrome
+npx --yes puppeteer --config puppeteer.config.cjs browsers install chrome
