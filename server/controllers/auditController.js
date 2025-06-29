@@ -1,13 +1,18 @@
 import puppeteer from "puppeteer";
 import { createRequire } from "module";
 import Report from "../models/Report.js";
-// Needed to use `require.resolve` inside ES modules
+
 const require = createRequire(import.meta.url);
 
 export const analyzeAccessibility = async (req, res) => {
   const { url } = req.body;
   const userId = req.user?._id;
+
+  console.log("📥 Incoming analyze request for:", url);
+  console.log("🔐 User ID:", userId);
+
   if (!url || !url.startsWith("http")) {
+    console.warn("⚠️ Invalid URL received:", url);
     return res.status(400).json({ message: "Invalid URL" });
   }
 
@@ -17,88 +22,105 @@ export const analyzeAccessibility = async (req, res) => {
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 
+    console.log("🚀 Puppeteer launched successfully");
+
     const page = await browser.newPage();
+    console.log("🧾 New page created, navigating to:", url);
+
     await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
 
-    // ✅ Inject axe-core into page using a valid file path
-    await page.addScriptTag({ path: require.resolve("axe-core/axe.min.js") });
+    console.log("🌐 Page loaded:", url);
+
+    const axePath = require.resolve("axe-core/axe.min.js");
+    console.log("🛠️ Resolved axe-core path:", axePath);
+
+    await page.addScriptTag({ path: axePath });
+
+    console.log("✅ axe-core injected into page");
 
     const result = await page.evaluate(async () => {
       const auditResults = await window.axe.run();
-
 
       const serializeNodes = (nodes) => {
         if (!nodes) return [];
         return nodes.map(node => ({
           html: node.html,
-          target: node.target, 
-          any: node.any ? node.any.map(item => ({ id: item.id, message: item.message, data: item.data })) : [],
-          all: node.all ? node.all.map(item => ({ id: item.id, message: item.message, data: item.data })) : [],
-          none: node.none ? node.none.map(item => ({ id: item.id, message: item.message, data: item.data })) : [],
+          target: node.target,
+          any: node.any ? node.any.map(item => ({
+            id: item.id,
+            message: item.message,
+            data: item.data
+          })) : [],
+          all: node.all ? node.all.map(item => ({
+            id: item.id,
+            message: item.message,
+            data: item.data
+          })) : [],
+          none: node.none ? node.none.map(item => ({
+            id: item.id,
+            message: item.message,
+            data: item.data
+          })) : [],
         }));
       };
 
       return {
-        violations: auditResults.violations.map(violation => ({
-          id: violation.id,
-          impact: violation.impact,
-          description: violation.description,
-          help: violation.help,
-          helpUrl: violation.helpUrl,
-          nodes: serializeNodes(violation.nodes),
-          // Add any other simple, serializable top-level properties of a violation you need
-          tags: violation.tags,
+        violations: auditResults.violations.map(v => ({
+          id: v.id,
+          impact: v.impact,
+          description: v.description,
+          help: v.help,
+          helpUrl: v.helpUrl,
+          nodes: serializeNodes(v.nodes),
+          tags: v.tags,
         })),
-        passes: auditResults.passes.map(pass => ({
-          id: pass.id,
-          description: pass.description,
-          help: pass.help,
-          helpUrl: pass.helpUrl,
-          nodes: serializeNodes(pass.nodes),
-          // Add any other simple, serializable top-level properties of a pass you need
-          tags: pass.tags,
+        passes: auditResults.passes.map(p => ({
+          id: p.id,
+          description: p.description,
+          help: p.help,
+          helpUrl: p.helpUrl,
+          nodes: serializeNodes(p.nodes),
+          tags: p.tags,
         })),
-        incomplete: auditResults.incomplete.map(item => ({
-          id: item.id,
-          description: item.description,
-          help: item.help,
-          helpUrl: item.helpUrl,
-          nodes: serializeNodes(item.nodes),
-          // Add any other simple, serializable top-level properties of an incomplete item you need
-          tags: item.tags,
+        incomplete: auditResults.incomplete.map(i => ({
+          id: i.id,
+          description: i.description,
+          help: i.help,
+          helpUrl: i.helpUrl,
+          nodes: serializeNodes(i.nodes),
+          tags: i.tags,
         })),
-        // Include other top-level serializable properties from auditResults if needed
         url: auditResults.url,
         timestamp: auditResults.timestamp,
-        toolOptions: auditResults.toolOptions, // Assuming this is serializable
-        // ... and any other top-level properties that are not circular
+        toolOptions: auditResults.toolOptions,
       };
     });
 
     await browser.close();
+    console.log("📦 Audit completed. Closing browser.");
 
     const savedReport = await Report.create({
       user: userId,
       type: "url",
       source: url,
       results: result,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
+    console.log("📝 Report saved to DB:", savedReport._id);
+
     res.status(200).json({
-  url: result.url,
-  violations: result.violations,
-  passes: result.passes,
-  incomplete: result.incomplete,
-  timestamp: result.timestamp || new Date(),
-}); 
+      url: result.url,
+      violations: result.violations,
+      passes: result.passes,
+      incomplete: result.incomplete,
+      timestamp: result.timestamp || new Date(),
+    });
   } catch (error) {
-    console.error("❌ Axe-core error:", error);
+    console.error("❌ Error during analysis:", error.message);
     res.status(500).json({
       message: "Accessibility analysis failed",
       error: error.message,
     });
   }
 };
-
-
