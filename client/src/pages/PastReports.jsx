@@ -10,11 +10,11 @@ const PastReports = () => {
   const { token } = useRecoilState(authState)[0];
   const [, setResult] = useRecoilState(accessibilityResultState);
   const navigate = useNavigate();
-
+  const BASE_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/reports", {
+        const res = await fetch(`${BASE_URL}/reports`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
