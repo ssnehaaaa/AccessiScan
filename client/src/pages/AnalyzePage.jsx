@@ -20,7 +20,7 @@ const AnalyzePage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${BASE_URL}/api/analyze`, {
+      const response = await fetch(`${BASE_URL}/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json",
                   "Authorization": `Bearer ${token}`,
