@@ -3,5 +3,5 @@
 # Install dependencies
 npm install
 
-# Use puppeteer CLI from node_modules explicitly
+# Install Chromium for Puppeteer using npx
 npx --yes puppeteer browsers install chrome
