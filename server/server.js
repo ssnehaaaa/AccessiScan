@@ -16,7 +16,8 @@ const app = express();
 // ✅ Middleware
 const allowedOrigins = [
   'https://accessi-scan-sneha.vercel.app',
-  'https://accessi-scan-sneha-ftm0e0jc8-ssnehaaaas-projects.vercel.app'
+  'https://accessi-scan-sneha-ftm0e0jc8-ssnehaaaas-projects.vercel.app',
+  'https://accessi-scan-ten.vercel.app'
 ];
 
 app.use(cors({
